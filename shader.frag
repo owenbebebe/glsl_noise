@@ -41,21 +41,28 @@ float PI = 3.1415926535897932384626433832795;
 void main() {
 
     float RADIUS = 0.3;
-    float SPEED = 0.1;
+    float SPEED = 0.5;
+
+    vec3 prime_color = vec3(0.0, 0.97, 0.32);
+    vec3 second_color = vec3(0.97, 0.55, 0.04);
 
     // Normalised pixel coordinates (from 0 to 1)
     vec2 st = gl_FragCoord.xy/u_resolution.xy;
     st -= 0.5;
     st.x *= u_resolution.x/u_resolution.y;
 
+    float dist = length(st);
+
     float angle = atan(st.y, st.x);
     vec2 trasition_angle = vec2(sin(angle), cos(angle));
-    float noise_val = noise(trasition_angle  + u_time * SPEED);
-    float d  = length(st) - (RADIUS + noise_val) * 0.3;
+    float noise_val = noise(trasition_angle  + u_time * SPEED) * 0.3;
+    float d  = dist - (RADIUS + noise_val) * 0.3;
     float circle = smoothstep(0.01, 0.0, d);
 
+    float mix_factor = smoothstep(RADIUS, 0.0, dist);
 
-    // we can add noise to the angle to create a more organic shape
+    vec3 color_mix = mix(prime_color, second_color, mix_factor);
+    vec3 final_color = color_mix * circle;
 
-    gl_FragColor = vec4(vec3(circle), 1.0);
+    gl_FragColor = vec4(final_color, 1.0);
 }
