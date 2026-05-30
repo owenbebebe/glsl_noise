@@ -13,8 +13,6 @@ float random (in vec2 st) {
                  * 43758.5453123);
 }
 
-// 2D Noise based on Morgan McGuire @morgan3d
-// https://www.shadertoy.com/view/4dS3Wd
 float noise (in vec2 st) {
     vec2 i = floor(st);
     vec2 f = fract(st);
@@ -26,7 +24,6 @@ float noise (in vec2 st) {
     float d = random(i + vec2(1.0, 1.0));
 
     // Smooth Interpolation
-
     // Cubic Hermine Curve.  Same as SmoothStep()
     vec2 u = f*f*(3.0-2.0*f);
     // u = smoothstep(0.,1.,f);
@@ -37,15 +34,28 @@ float noise (in vec2 st) {
             (d - b) * u.x * u.y;
 }
 
+float PI = 3.1415926535897932384626433832795;
+
+// we first have to create a circualr shape and apply a noise funtion to its border
+// the shape border would interpolate in according to time . 
 void main() {
+
+    float RADIUS = 0.3;
+    float SPEED = 0.1;
+
+    // Normalised pixel coordinates (from 0 to 1)
     vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    st -= 0.5;
+    st.x *= u_resolution.x/u_resolution.y;
 
-    // Scale the coordinate system to see
-    // some noise in action
-    vec2 pos = vec2(st*5.0);
+    float angle = atan(st.y, st.x);
+    vec2 trasition_angle = vec2(sin(angle), cos(angle));
+    float noise_val = noise(trasition_angle  + u_time * SPEED);
+    float d  = length(st) - (RADIUS + noise_val) * 0.3;
+    float circle = smoothstep(0.01, 0.0, d);
 
-    // Use the noise function
-    float n = noise(pos);
 
-    gl_FragColor = vec4(vec3(n), 1.0);
+    // we can add noise to the angle to create a more organic shape
+
+    gl_FragColor = vec4(vec3(circle), 1.0);
 }

@@ -9,7 +9,22 @@
 </head>
 <body>
 
-  <canvas class="glslCanvas" data-fragment-url="shader.frag" width="500" height="500"></canvas>
+  <canvas id="myCanvas" data-fragment-url="shader.frag"></canvas>
+
+  <script>
+    // Initialize GlslCanvas manually so we can control its size
+    const canvas = document.getElementById('myCanvas');
+    const sandbox = new GlslCanvas(canvas);
+
+    // Force the internal WebGL resolution to match the window exactly
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    
+    window.addEventListener('resize', resize);
+    resize(); // Call it once on load
+  </script>
 
 </body>
 </html>
