@@ -36,33 +36,52 @@ float noise (in vec2 st) {
 
 float PI = 3.1415926535897932384626433832795;
 
-// we first have to create a circualr shape and apply a noise funtion to its border
-// the shape border would interpolate in according to time . 
 void main() {
 
-    float RADIUS = 0.3;
+    float RADIUS = 0.5;
     float SPEED = 0.5;
 
-    vec3 prime_color = vec3(0.0, 0.97, 0.32);
-    vec3 second_color = vec3(0.97, 0.55, 0.04);
+    vec3 prime_color = vec3(0.04, 0.22, 0.02);
+    vec3 second_color = vec3(0.36, 1.0, 0.3);
+
+    vec3 prime_color_2 = vec3(1.0);
 
     // Normalised pixel coordinates (from 0 to 1)
     vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    vec2 mouse = u_mouse/u_resolution.xy;
     st -= 0.5;
+    mouse -= 0.5;
     st.x *= u_resolution.x/u_resolution.y;
 
     float dist = length(st);
 
     float angle = atan(st.y, st.x);
     vec2 trasition_angle = vec2(sin(angle), cos(angle));
-    float noise_val = noise(trasition_angle  + u_time * SPEED) * 0.3;
-    float d  = dist - (RADIUS + noise_val) * 0.3;
-    float circle = smoothstep(0.01, 0.0, d);
+    
+    // First blob distortion
+    float noise_val = noise(trasition_angle + u_time * SPEED) * 0.3;
+    float d = dist - (RADIUS + noise_val) * 0.35;
 
-    float mix_factor = smoothstep(RADIUS, 0.0, dist);
+    // Second blob distortion
+    float noice_val_2 = noise(trasition_angle + u_time * SPEED * 1.5) * 0.2;
+    float d2 = dist - (RADIUS + noice_val_2) * 0.3;
 
+    // 1. COMBINE THE SHAPES HERE
+    // Taking the minimum of the two distances unions them into a single shape
+    float combined_d = min(d, d2);
+    //combined_d = noise(vec2(d, d2));
+    
+    // 2. CREATE A SINGLE MASK
+    float shape_mask = smoothstep(0.01, 0.0, combined_d);
+
+    // Calculate the radial gradient
+    float mix_factor = smoothstep(RADIUS, 0.0,noise(st + u_time) * 0.3);
     vec3 color_mix = mix(prime_color, second_color, mix_factor);
-    vec3 final_color = color_mix * circle;
+    
+    // 3. APPLY COLOR TO THE UNIFIED MASK
+    float mix_factor_2 = smoothstep(RADIUS * 0.45, 0.0, noise(st + u_time) * 2.);
+    color_mix = mix(color_mix, prime_color_2, mix_factor_2);
+    vec3 final_color = color_mix * shape_mask;
 
     gl_FragColor = vec4(final_color, 1.0);
 }
