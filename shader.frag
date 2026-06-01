@@ -100,13 +100,14 @@ void main() {
     // oval the highlight
     light_dir.y *= 1.8 + min(noice_val_2, noise_val) * 0.08; 
     light_dir.x *= 0.8 + min(noice_val_2, noise_val) * 0.08;
-
-    // 6. Draw the final shape
     float highlight = smoothstep(0.07, 0.02, length(light_dir + min(noice_val_2, noise_val) * 0.1));
 
     // 5. THE BORDER RING
     // Keep a thin white outline to define the absolute edge of the bubble
     float border = smoothstep(-0.001, 0.0, combined_d);
+
+    // 6. white border flare
+    float flare = smoothstep(0.08, 0.0, abs(combined_d + 0.03));
 
     // ==========================================
     // --- COMBINE EVERYTHING ---
@@ -123,6 +124,12 @@ void main() {
 
     // Add the sharp white border rim
     bubble_color += vec3(1.0) * border * 0.6;
+
+    // Add the subtle white flare around the border    
+    vec2 cut_direction = normalize(vec2(-1., -1.));
+    float cut_mask = smoothstep(-0.01, 0.2, dot(st, cut_direction));
+    flare *= cut_mask; // Cut the border in half diagonally for a more dynamic look
+    bubble_color += vec3(1.0) * flare * 0.8;
 
     // Finally, multiply by the shape mask so the background remains black/transparent
     vec3 final_color = bubble_color * shape_mask;
