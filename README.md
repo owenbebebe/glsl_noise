@@ -1,28 +1,37 @@
-# Project 52 — 01: Randomness
+# Project 52 — 02: Bubble
 
 **Project 52** is a personal series of 52 creative coding projects, one per week, each exploring a distinct concept through GLSL, generative art, and interactive media.
 
 ---
 
-## 01 — Randomness
+## 02 — Bubble
 
-*Inspired by audio-visual artist [Ryoji Ikeda](https://www.ryojiikeda.com/)*
+This project dives into **noise and blob techniques** to recreate the organic, inflated aesthetic of a bubble — part scientific curiosity, part Y2K nostalgia. The goal is to push GLSL's procedural capabilities to produce something that feels alive: glossy, wobbly, and irresistibly tactile.
 
-This project explores the nature of randomness as both a visual language and a philosophical statement. Drawing from Ikeda's signature aesthetic — high-frequency, data-driven imagery that feels simultaneously mechanical and sublime — the shader generates a field of scrolling binary noise where every attribute is determined by chance.
+### Concept
 
-### What's random
+Bubbles are deceptively complex — they refract light, shift color with iridescence, and deform fluidly under motion. This shader mimics those properties by layering domain-warped noise over a smooth metaball-style blob form, with a Fresnel-like rim that catches light just like a soap film would.
 
-- **Number of rows** — recomputed every second, the canvas splits into anywhere between 2 and 100 horizontal bands
-- **Speed** — each row scrolls at its own velocity, sampled independently
-- **Direction** — each row independently scrolls left or right
-- **Frequency** — each row has its own block density, producing fine grain or coarse chunks at random
-- **Color channels** — R, G, and B are offset from each other per-row to generate a chromatic glitch
+The Y2K dimension leans into the era's love of hyper-glossy, inflated 3D shapes — think candy-colored UI, aqua buttons, and shiny orbs. The piece sits somewhere between a lava lamp and a Windows XP screensaver.
+
+### Techniques
+
+- **FBM / Domain-warped noise** — multiple octaves of smooth noise warp the bubble's surface, giving it organic wobble and depth
+- **Blob / Metaball shape** — a smooth implicit surface forms the base silhouette, which breathes and pulses over time
+- **Fresnel rim lighting** — edge glow simulates the light-catching rim of a soap bubble
+- **Iridescent color shift** — hue rotates across the surface based on the normal angle, echoing the thin-film interference of real bubbles
+- **Time-driven animation** — the blob continuously deforms, never settling into a static form
 
 ### Interaction
 
-Hovering over a row temporarily widens its blocks — a brief moment of visual calm carved out of the noise. The effect lingers for a few seconds across up to 5 rows simultaneously before dissolving back into chaos.
+Hovering or clicking disturbs the bubble's surface — the noise field reacts to the cursor position, creating ripples or local deformations that fade back into the resting wobble. The bubble feels like it *knows* you're there.
 
-This tension between control and surrender is the core statement of the piece: *you can reach out and touch the noise, but the next second it resets, and nothing you did leaves a mark.* A meditation on the feeling that nothing matters in a world of chaos.
+### Aesthetic Reference
+
+- Y2K glossy UI and inflated 3D iconography
+- Soap bubbles and oil slicks
+- Lava lamps and liquid motion screensavers
+- Early 2000s candy-colored web design
 
 ### Stack
 
