@@ -24,14 +24,18 @@ float noise (in vec2 st) {
     float d = random(i + vec2(1.0, 1.0));
 
     // Smooth Interpolation
-    // Cubic Hermine Curve.  Same as SmoothStep()
     vec2 u = f*f*(3.0-2.0*f);
-    // u = smoothstep(0.,1.,f);
 
-    // Mix 4 coorners percentages
+    // Mix 4 corners percentages
     return mix(a, b, u.x) +
             (c - a)* u.y * (1.0 - u.x) +
             (d - b) * u.x * u.y;
+}
+
+float smooth_min(float a, float b) {
+    const float k = 0.3; // Smoothness factor
+    float h = max(k - abs(a - b), 0.0) / k;
+    return min(a, b) - h * h * h * k * (1.0 / 6.0);
 }
 
 float PI = 3.1415926535897932384626433832795;
@@ -46,6 +50,21 @@ void main() {
     st -= 0.5;
     st.x *= u_resolution.x/u_resolution.y;
 
+
+    vec2 mouse = vec2(0.0);
+    mouse = u_mouse.xy / u_resolution.xy;
+    mouse -= 0.5;
+    mouse.x *= u_resolution.x / u_resolution.y;
+        
+    // Calculate distance from current pixel to mouse
+    vec2 to_mouse = st - mouse;
+    float mouse_dist = length(to_mouse);
+        
+    // Push pixels away from the mouse to create a squishy dent
+    vec2 push = normalize(to_mouse) * smoothstep(5.0, 4.3, mouse_dist) * 0.05;
+    st -= push;
+
+
     float dist = length(st);
 
     float angle = atan(st.y, st.x);
@@ -56,11 +75,11 @@ void main() {
     float d = dist - (RADIUS + noise_val) * 0.35;
 
     // Second blob distortion
-    float noice_val_2 = noise(trasition_angle + u_time * SPEED * 1.5) * 0.2;
+    float noice_val_2 = noise(trasition_angle * 1.5 + u_time * SPEED) * 0.2;
     float d2 = dist - (RADIUS + noice_val_2) * 0.3;
 
     // 1. COMBINE THE SHAPES
-    float combined_d = min(d, d2);
+    float combined_d = smooth_min(d, d2);
     float shape_mask = smoothstep(0.01, 0.0, combined_d);
 
     // ==========================================
@@ -68,70 +87,55 @@ void main() {
     // ==========================================
 
     // 1. FAKE DEPTH
-    // We map the distance inside the shape to a 0.0 to 1.0 range.
-    // 1.0 = The thickest part (center), 0.0 = The thinnest part (edge).
     float inner_depth = clamp(-combined_d / (RADIUS * 0.35), 0.0, 1.0);
 
     // 2. FRESNEL EFFECT (Rim Lighting)
-    // By subtracting the depth from 1.0 and using a power function, 
-    // we make the edges highly visible and the center nearly invisible.
     float fresnel = pow(1.0 - inner_depth, 4.);
 
     // 3. IRIDESCENCE (Rainbow Soap Swirls)
-    // We use a cosine palette driven by our noise and fake depth.
-    // This creates shifting rainbow colors that swirl over time.
     float swirl = inner_depth + noise(st + u_time * SPEED) * 0.3;
     vec3 iridescence = 0.5 + 0.5 * cos(2. * PI * (swirl + vec3(0.0, 0.33, 0.67)));
 
     // 4. SPECULAR HIGHLIGHT (The shine)
-    // We place a bright white dot offset to the top-left to simulate a light source.
     vec2 light_pos = vec2(0.1, 0.1); 
+
     vec2 wobble_light = light_pos + min(noice_val_2, noise_val) * 0.08;
     vec2 light_dir = st - wobble_light;
 
-    // create rotaion matrix
+    // Create rotation matrix
     float rot_angle = 2.3 + min(noice_val_2, noise_val) * 0.08;  
     float c = cos(rot_angle);
     float s = sin(rot_angle);
     mat2 rot_matrix = mat2(c, -s, 
-                        s,  c);
+                           s,  c);
     light_dir = rot_matrix * light_dir;
 
-    // oval the highlight
+    // Oval the highlight
     light_dir.y *= 1.8 + min(noice_val_2, noise_val) * 0.08; 
     light_dir.x *= 0.8 + min(noice_val_2, noise_val) * 0.08;
     float highlight = smoothstep(0.07, 0.02, length(light_dir + min(noice_val_2, noise_val) * 0.1));
 
     // 5. THE BORDER RING
-    // Keep a thin white outline to define the absolute edge of the bubble
     float border = smoothstep(-0.001, 0.0, combined_d);
 
-    // 6. white border flare
+    // 6. WHITE BORDER FLARE
     float flare = smoothstep(0.08, 0.0, abs(combined_d + 0.03));
 
     // ==========================================
     // --- COMBINE EVERYTHING ---
     // ==========================================
 
-    // Start with a dark, slightly transparent base for the center of the bubble
     vec3 base_color = vec3(0.05, 0.08, 0.1); 
-
-    // Mix in the rainbow colors, but only strongly on the edges (using fresnel)
     vec3 bubble_color = mix(base_color, iridescence, fresnel * 0.9);
-
-    // Add the bright white highlight
+    
     bubble_color += vec3(1.0) * highlight;
-
-    // Add the sharp white border rim
     bubble_color += vec3(1.0) * border * 0.6;
 
-    // Add the subtle white flare around the border    
     vec2 cut_direction = normalize(vec2(-1., -1.));
     float cut_mask = smoothstep(-0.01, 0.2, dot(st, cut_direction));
-    flare *= cut_mask; // Cut the border in half diagonally for a more dynamic look
+    flare *= cut_mask; 
     bubble_color += vec3(1.0) * flare * 0.8;
 
-    // Finally, multiply by the shape mask so the background remains black/transparent
     vec3 final_color = bubble_color * shape_mask;
 
     gl_FragColor = vec4(final_color, 1.0);
