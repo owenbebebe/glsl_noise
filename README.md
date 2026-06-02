@@ -4,6 +4,8 @@
 
 **Result:** [Click here to visit website](https://owenbebebe.github.io/glsl_noise/)
 
+
+<img width="800" height="450" alt="bubble-gif" src="https://github.com/user-attachments/assets/0fa101ae-9988-4eb0-bf06-e605e8ef86d5" />
 ---
 
 ## 02 — Bubble
