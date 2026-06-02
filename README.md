@@ -2,6 +2,8 @@
 
 **Project 52** is a personal series of 52 creative coding projects, one per week, each exploring a distinct concept through GLSL, generative art, and interactive media.
 
+**Result:** [Click here to visit website](https://owenbebebe.github.io/glsl_noise/)
+
 ---
 
 ## 02 — Bubble
