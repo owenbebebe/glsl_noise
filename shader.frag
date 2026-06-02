@@ -61,7 +61,7 @@ void main() {
     float mouse_dist = length(to_mouse);
         
     // Push pixels away from the mouse to create a squishy dent
-    vec2 push = normalize(to_mouse) * smoothstep(5.0, 4.3, mouse_dist) * 0.05;
+    vec2 push = normalize(to_mouse) * smoothstep(5.0, 4.3, mouse_dist) * 0.1;
     st -= push;
 
 
@@ -78,13 +78,10 @@ void main() {
     float noice_val_2 = noise(trasition_angle * 1.5 + u_time * SPEED) * 0.2;
     float d2 = dist - (RADIUS + noice_val_2) * 0.3;
 
-    // 1. COMBINE THE SHAPES
+    // Combining the shapes
     float combined_d = smooth_min(d, d2);
     float shape_mask = smoothstep(0.01, 0.0, combined_d);
 
-    // ==========================================
-    // --- 3D BUBBLE LIGHTING & SHADING ---
-    // ==========================================
 
     // 1. FAKE DEPTH
     float inner_depth = clamp(-combined_d / (RADIUS * 0.35), 0.0, 1.0);
